@@ -43,13 +43,18 @@ from xml.dom import minidom
 from PIL import Image, ImageDraw, ImageCms
 from skimage import color, io
 
-import pdb
+import csv
+import openpyxl
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
 
 
 Image.MAX_IMAGE_PIXELS = None
 
 
 VIEWER_SLIDE_NAME = 'slide'
+
 
 
 class TileWorker(Process):
@@ -230,15 +235,15 @@ class DeepZoomImageTiler(object):
             # print(self._basename + " - Obj information found")
         except:
             print(self._basename + " - No Obj information found")
-            print(self._slide.properties)
-            print(self._ImgExtension)
+            #print(self._slide.properties)
+            #print(self._ImgExtension)
             if ("jpg" in self._ImgExtension) | ("dcm" in self._ImgExtension) | ("tif" in self._ImgExtension):
                 #Objective = self._ROIpc
                 Objective = 1.
                 Magnification = Objective
                 print("input is jpg - will be tiled as such with %f" % Objective)
             else:
-                Objective = 20
+                Objective = 20   #se non è specificata la magnitudo nel file svs si mette 20x 
                 #return
         #calculate magnifications
         Available = tuple(Objective / x for x in Factors)
@@ -720,6 +725,35 @@ def xml_read_labels(xmldir, Fieldxml):
         return xml_labels, xml_valid 
 
 
+
+
+#tutti i percorsi delle patch vengono scritti su all_patches.csv
+#patches_path: folder with wsi patches
+
+def write_all_patches(patches_path, feature_extractor_path):
+    path_list = []
+
+    for path, subdirs, files in os.walk(patches_path):
+        for name in files:
+            if not subdirs:
+            p = []
+            p.append(os.path.join(path, name))
+            path_list.append(p)
+
+    # opening the csv file in 'a+' mode
+    file = open(os.path.join(feature_extractor_path, "all_patches.csv", 'a+', newline =''))
+
+    # writing the data into the file
+    with file:   
+        write = csv.writer(file)
+        write.writerows(path_list)
+
+    file.close()
+
+
+
+
+
 if __name__ == '__main__':
 	parser = OptionParser(usage='Usage: %prog [options] <slide>')
 
@@ -771,12 +805,9 @@ if __name__ == '__main__':
 		type='float', default=-1,
 		help='Magnification at which tiling should be done (-1 of all)')
 	parser.add_option('-N', '--normalize', metavar='NAME', dest='normalize',
-		help='if normalization is needed, N list the mean and std for each channel. For example \'57,22,-8,20,10,5\' with the first 3 numbers being the targeted means, and then the targeted stds')
-
-
-
+		help='if normalization is needed, N list the mean and std for each channel. For example \'57,22,-8,20,10,5\' with the first 3 numbers being the targeted means, and then the targeted stds')       
     
-	(opts, args) = parser.parse_args()
+    (opts, args) = parser.parse_args()
 
     
 	try:
@@ -975,10 +1006,7 @@ if __name__ == '__main__':
 			except Exception as e:
 				print("Failed to process file %s, error: %s" % (filename, sys.exc_info()[0]))
 				print(e)
-	'''
-	dz_queue.join()
-	for i in range(opts.max_number_processes):
-		dz_queue.put( None )
-	'''
 
-	print("End")
+    print("writing all_patches.csv")
+    write_all_patches(opts.basename, '../feature_extractor' )
+    print("End")

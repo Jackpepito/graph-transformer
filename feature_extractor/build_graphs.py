@@ -129,6 +129,25 @@ def compute_feats(args, bags_list, model, save_path=None, whole_slide_path=None)
         torch.save(adj_s, os.path.join(save_path, 'simclr_files', file_name, 'adj_s.pt'))
 
         print('\r Computed: {}/{}'.format(i+1, num_bags))
+
+#scrive file txt che contiene le wsi per train, val, test per il transformer 
+def write_split(site, metadata):
+    dfs = pd.concat(pd.read_excel(os.path.join(site, metadata), sheet_name=None), ignore_index=True)
+    train, test = train_test_split(dfs, test_size=0.2)
+    train, val= train_test_split(train, test_size=0.1)
+    bags = [train, val, test]
+    split = ['train', 'val', 'test']
+
+    i=0
+    for bag in bags:
+        with open(os.path.join(site,split[i],'.txt'), 'w') as f:
+            for index, row in bag.iterrows():
+                item=row['Image No.'] + '\\t' + row['Treatment effect'] 
+                f.write("%s\n" % item)
+        i+=1
+
+    del dfs, bags
+    del train, val, test
         
 
 def main():
@@ -142,6 +161,8 @@ def main():
     parser.add_argument('--magnification', default='20x', type=str, help='Magnification to compute features')
     parser.add_argument('--weights', default=None, type=str, help='path to the pretrained weights')
     parser.add_argument('--output', default=None, type=str, help='path to the output graph folder')
+    parser.add_argument('--site', default=None, type=str, help='full path to the patches folder')
+    parser.add_argument('--metadata', default=None, type=str, help='name of metadata file')
     args = parser.parse_args()
     
     if args.backbone == 'resnet18':
@@ -180,6 +201,6 @@ def main():
     bags_list = glob.glob(args.dataset, recursive = True)
     print(bags_list)
     compute_feats(args, bags_list, resnet, args.output)
-    
+    write_split(args.site, args.metadata)
 if __name__ == '__main__':
     main()
