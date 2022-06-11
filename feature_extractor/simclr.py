@@ -58,7 +58,6 @@ class SimCLR(object):
         return loss
 
     def train(self):
-
         train_loader, valid_loader = self.dataset.get_data_loaders()
 
         model = ResNetSimCLR(**self.config["model"])# .to(self.device)
@@ -90,13 +89,16 @@ class SimCLR(object):
         n_iter = 0
         valid_n_iter = 0
         best_valid_loss = np.inf
+        #print(len(train_loader.dataset))
         
         for epoch_counter in range(self.config['epochs']):
+            
             for (xis, xjs) in train_loader:
+                #print(train_loader.dataset[0])
+                #print(xis.shape)
                 optimizer.zero_grad()
                 xis = xis.to(self.device)
                 xjs = xjs.to(self.device)
-
                 loss = self._step(model, xis, xjs, n_iter)
 
                 if n_iter % self.config['log_every_n_steps'] == 0:
@@ -111,9 +113,10 @@ class SimCLR(object):
 
                 optimizer.step()
                 n_iter += 1
-
+            
             # validate the model if requested
             if epoch_counter % self.config['eval_every_n_epochs'] == 0:
+                print(epoch_counter, self.config['eval_every_n_epochs'] )
                 valid_loss = self._validate(model, valid_loader)
                 print("[%d/%d] val_loss: %.3f" % (epoch_counter, self.config['epochs'], valid_loss))
                 if valid_loss < best_valid_loss:

@@ -42,6 +42,10 @@ from imageio import imread
 from xml.dom import minidom
 from PIL import Image, ImageDraw, ImageCms
 from skimage import color, io
+
+import pdb
+
+
 Image.MAX_IMAGE_PIXELS = None
 
 
@@ -220,10 +224,13 @@ class DeepZoomImageTiler(object):
         #get slide dimensions, zoom levels, and objective information
         Factors = self._slide.level_downsamples
         try:
+            print(self._slide.properties)
             Objective = float(self._slide.properties[openslide.PROPERTY_NAME_OBJECTIVE_POWER])
+            
             # print(self._basename + " - Obj information found")
         except:
             print(self._basename + " - No Obj information found")
+            print(self._slide.properties)
             print(self._ImgExtension)
             if ("jpg" in self._ImgExtension) | ("dcm" in self._ImgExtension) | ("tif" in self._ImgExtension):
                 #Objective = self._ROIpc
@@ -231,7 +238,8 @@ class DeepZoomImageTiler(object):
                 Magnification = Objective
                 print("input is jpg - will be tiled as such with %f" % Objective)
             else:
-                return
+                Objective = 20
+                #return
         #calculate magnifications
         Available = tuple(Objective / x for x in Factors)
         #find highest magnification greater than or equal to 'Desired'
@@ -767,10 +775,10 @@ if __name__ == '__main__':
 
 
 
-
+    
 	(opts, args) = parser.parse_args()
 
-
+    
 	try:
 		slidepath = args[0]
 	except IndexError:
@@ -956,11 +964,13 @@ if __name__ == '__main__':
 					continue
 		else:
 			output = os.path.join(opts.basename, opts.basenameJPG)
+			#print(opts.basename, opts.basenameJPG)
 			if os.path.exists(output + "_files"):
 				print("Image %s already tiled" % opts.basenameJPG)
 				continue
 			try:
 			#if True:
+			    #pdb.set_trace()
 				DeepZoomStaticTiler(filename, output, opts.format, opts.tile_size, opts.overlap, opts.limit_bounds, opts.quality, opts.workers, opts.with_viewer, opts.Bkg, opts.basenameJPG, opts.xmlfile, opts.mask_type, opts.ROIpc, '', ImgExtension, opts.SaveMasks, opts.Mag, opts.normalize, opts.Fieldxml).run()
 			except Exception as e:
 				print("Failed to process file %s, error: %s" % (filename, sys.exc_info()[0]))

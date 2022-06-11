@@ -50,16 +50,20 @@ class GraphDataset(data.Dataset):
         self.root = root
         self.ids = ids
         #self.target_patch_size = target_patch_size
-        self.classdict = {'normal': 0, 'luad': 1, 'lscc': 2}        #
+        #self.classdict = {'normal': 0, 'luad': 1, 'lscc': 2}        #
         #self.classdict = {'normal': 0, 'tumor': 1}        #
         #self.classdict = {'Normal': 0, 'TCGA-LUAD': 1, 'TCGA-LUSC': 2}
+        self.classdict = {'invalid':0 , 'Effective': 1}        #
+        #self.classdict = {'H': 0, 'NH': 1}        #
         self._up_kwargs = {'mode': 'bilinear'}
 
     def __getitem__(self, index):
         sample = {}
         info = self.ids[index].replace('\n', '')
-        file_name, label = info.split('\t')[0].rsplit('.', 1)[0], info.split('\t')[1]
-        site, file_name = file_name.split('/')
+        #file_name, label = info.split('\t')[0].rsplit('.', 1)[0], info.split('\t')[1]
+        file_name, label = info.split('\t')[0], info.split('\t')[1]
+        #site, file_name = file_name.split('/')
+        site = self.root.split(/)[-1]
 
         # if site =='CCRCC':
         #     file_path = self.root + 'CPTAC_CCRCC_features/simclr_files'
@@ -76,8 +80,14 @@ class GraphDataset(data.Dataset):
             file_name = info.split('\t')[0]
             _, file_name = file_name.split('/')
             file_path = self.root + 'TCGA_LUNG_features/simclr_files'       #_resnet_with
+        
+        # For OBR only
+        if site =='OBR':
+            #path dei grafi del dataset
+            file_path = self.root + '/simclr_files'       #_resnet_with
 
         sample['label'] = self.classdict[label]
+        #file name è la cartella del grafo
         sample['id'] = file_name
 
         #feature_path = os.path.join(self.root, file_name, 'features.pt')

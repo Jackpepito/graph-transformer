@@ -11,7 +11,8 @@ def main():
     args = parser.parse_args()
     config = yaml.load(open("config.yaml", "r"), Loader=yaml.FullLoader)
     dataset = DataSetWrapper(config['batch_size'], **config['dataset'])
-    
+    print(dataset)
+    print(config)
     simclr = SimCLR(dataset, config)
     simclr.train()
 

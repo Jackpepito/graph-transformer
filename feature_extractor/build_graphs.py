@@ -13,6 +13,10 @@ import numpy as np
 from PIL import Image
 from collections import OrderedDict
 
+def get_device():
+
+    return device
+
 class ToPIL(object):
     def __call__(self, sample):
         img = sample
@@ -86,14 +90,17 @@ def bag_dataset(args, csv_file_path):
     return dataloader, len(transformed_dataset)
 
 
-def compute_feats(args, bags_list, i_classifier, save_path=None, whole_slide_path=None):
+def compute_feats(args, bags_list, model, save_path=None, whole_slide_path=None):
     num_bags = len(bags_list)
     Tensor = torch.FloatTensor
+    model.cuda()
     for i in range(0, num_bags):
         feats_list = []
         if  args.magnification == '20x':
-            csv_file_path = glob.glob(os.path.join(bags_list[i], '*.jpeg'))
-            file_name = bags_list[i].split('/')[-3].split('_')[0]
+            print(bags_list[i])
+            csv_file_path = glob.glob(os.path.join(bags_list[i], '20.0/*.jpeg'))
+            print(csv_file_path)
+            file_name = bags_list[i].split('/')[-2].split('_')[0]
         if args.magnification == '5x' or args.magnification == '10x':
             csv_file_path = glob.glob(os.path.join(bags_list[i], '*.jpg'))
 
@@ -105,8 +112,8 @@ def compute_feats(args, bags_list, i_classifier, save_path=None, whole_slide_pat
             continue
         with torch.no_grad():
             for iteration, batch in enumerate(dataloader):
-                patches = batch['input'].float().cuda() 
-                feats, classes = i_classifier(patches)
+                patches = batch['input'].float().cuda()
+                feats = model(patches)
                 #feats = feats.cpu().numpy()
                 feats_list.extend(feats)
         
@@ -152,23 +159,27 @@ def main():
     for param in resnet.parameters():
         param.requires_grad = False
     resnet.fc = nn.Identity()
-    i_classifier = cl.IClassifier(resnet, num_feats, output_class=args.num_classes).cuda()
+
+    #i_classifier = cl.IClassifier(resnet, num_feats, output_class=args.num_classes).cuda()
     
     # load feature extractor
     if args.weights is None:
         print('No feature extractor')
         return
+
     state_dict_weights = torch.load(args.weights)
-    state_dict_init = i_classifier.state_dict()
+    state_dict_init = resnet.state_dict()
     new_state_dict = OrderedDict()
     for (k, v), (k_0, v_0) in zip(state_dict_weights.items(), state_dict_init.items()):
         name = k_0
         new_state_dict[name] = v
-    i_classifier.load_state_dict(new_state_dict, strict=False)
+    resnet.load_state_dict(new_state_dict, strict=False)
+
  
     os.makedirs(args.output, exist_ok=True)
-    bags_list = glob.glob(args.dataset)
-    compute_feats(args, bags_list, i_classifier, args.output)
+    bags_list = glob.glob(args.dataset, recursive = True)
+    print(bags_list)
+    compute_feats(args, bags_list, resnet, args.output)
     
 if __name__ == '__main__':
     main()

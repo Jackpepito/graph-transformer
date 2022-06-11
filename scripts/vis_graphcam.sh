@@ -1,5 +1,5 @@
 python src/vis_graphcam.py \
---path_file "cptac_lung_val2.txt" \
---path_patches "/run/media/yizheng/YiZ/CPTAC_data/patches" \
---path_WSI "/run/media/yizheng/YiZ/CPTAC/PKG - CPTAC-LUAD/LUAD" \
---path_graph "/scratch2/zheng/cptac_data/CPTAC_LUNG_features/simclr_files" \
+--path_file "/content/gdrive/MyDrive/graph-project/graph-transformer/graphs/val.txt" \
+--path_patches "/content/gdrive/MyDrive/graph-project/output_script/" \
+--path_WSI "/content/gdrive/MyDrive/graph-project/CRC_ROIs-9classi/" \
+--path_graph "/content/gdrive/MyDrive/graph-project/graph-transformer/graphs/simclr_files" \
