@@ -61,9 +61,9 @@ class GraphDataset(data.Dataset):
         sample = {}
         info = self.ids[index].replace('\n', '')
         #file_name, label = info.split('\t')[0].rsplit('.', 1)[0], info.split('\t')[1]
-        file_name, label = info.split('\t')[0], info.split('\t')[1]
+        file_name, label = info.split('/')[0], info.split('/')[1]
         #site, file_name = file_name.split('/')
-        site = self.root.split(/)[-1]
+        site = self.root.split('/')[-2]
 
         # if site =='CCRCC':
         #     file_path = self.root + 'CPTAC_CCRCC_features/simclr_files'
@@ -84,12 +84,13 @@ class GraphDataset(data.Dataset):
         # For OBR only
         if site =='OBR':
             #path dei grafi del dataset
-            file_path = self.root + '/simclr_files'       #_resnet_with
+            file_path = self.root + 'simclr_files/'  
+            #print(file_path)#_resnet_with
 
         sample['label'] = self.classdict[label]
         #file name è la cartella del grafo
         sample['id'] = file_name
-
+        print(file_name)
         #feature_path = os.path.join(self.root, file_name, 'features.pt')
         feature_path = os.path.join(file_path, file_name, 'features.pt')
 

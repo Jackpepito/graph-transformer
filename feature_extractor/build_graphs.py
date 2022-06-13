@@ -201,6 +201,6 @@ def main():
     bags_list = glob.glob(args.dataset, recursive = True)
     print(bags_list)
     compute_feats(args, bags_list, resnet, args.output)
-    write_split(args.site, args.metadata)
+    #write_split(args.site, args.metadata)
 if __name__ == '__main__':
     main()

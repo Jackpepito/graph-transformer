@@ -48,7 +48,9 @@ if train:
     #questo è il file di testo, ogni riga è un grafo
     ids_train = open(args.train_set).readlines()
     #il primo argomento è la root, il secondo è la riga del file di testo che indica grafo + label
-    dataset_train = GraphDataset(os.path.join(data_path, ""), ids_train)
+    #print(data_path)
+    dataset_train = GraphDataset(data_path, ids_train)
+    print(len(dataset_train))
     dataloader_train = torch.utils.data.DataLoader(dataset=dataset_train, batch_size=batch_size, num_workers=10, collate_fn=collate, shuffle=True, pin_memory=True, drop_last=True)
     total_train_num = len(dataloader_train) * batch_size
     print(total_train_num)
